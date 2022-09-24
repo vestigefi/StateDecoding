@@ -1,7 +1,7 @@
 import requests
 import json
 from typing import Dict, Union
-from src._logger import logger
+from src.common.logger import logger
 
 
 MAINNET_NODE_API_URL = "https://mainnet-api.algonode.cloud/"

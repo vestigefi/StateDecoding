@@ -12,8 +12,8 @@ class LogFormatter(logging.Formatter):
     def format(self, record):
         t = time.localtime()
         message = logging.Formatter.format(self, record)
-        return "[{}] {}:{}".format(
-            time.strftime("%m/%d/%Y, %H:%M:%S", t), record.levelname, message
+        return "[{}] {}".format(
+            time.strftime("%m/%d/%Y, %H:%M:%S", t), message
         )
 
 

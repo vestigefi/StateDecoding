@@ -4,11 +4,11 @@ from typing import Optional, TypedDict, List, Dict, Union
 
 class UsageType:
     # one-sided staking for coins, e.g. YLDY -> YLDY
-    STAKING = 'STKE'
+    STAKING = "STKE"
     # one-sided and two-sided staking for coins, e.g. YLDY/ALGO LP -> YLDY
-    FARMING = 'FARM'
+    FARMING = "FARM"
     # lending/borrowing protocols
-    LENDING = 'LEND'
+    LENDING = "LEND"
 
 
 class LocalStateOutput(TypedDict):
@@ -85,6 +85,7 @@ class ApplicationType(ABC):
         # Return parsed global state for given application
         pass
 
+    @abstractmethod
     def test_application_type(self) -> bool:
         # Dummy function that should call any of the known IDs of this application type using above functions
         # and check if data is valid

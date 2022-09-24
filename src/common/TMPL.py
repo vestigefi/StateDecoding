@@ -1,7 +1,12 @@
 # This is a template file for easy start
 
 from typing import Dict, Union, List
-from src.common.abstract import ApplicationType, UsageType, GlobalStateOutput, LocalStateOutput
+from src.common.abstract import (
+    ApplicationType,
+    UsageType,
+    GlobalStateOutput,
+    LocalStateOutput,
+)
 
 
 class Template(ApplicationType):
@@ -13,7 +18,7 @@ class Template(ApplicationType):
     @property
     def key(self) -> str:
         # TODO
-        return "0TMP"
+        return "TMPL"
 
     @property
     def type(self) -> str:
@@ -38,20 +43,25 @@ class Template(ApplicationType):
         # TODO
         return True
 
-    def parse_local_state(self, local_state: Dict[str, Union[str, int]]) -> LocalStateOutput:
-        state_output: LocalStateOutput = {
-            "asset_balances": dict()
-        }
+    def parse_local_state(
+        self, local_state: Dict[str, Union[str, int]]
+    ) -> LocalStateOutput:
+        state_output: LocalStateOutput = {"asset_balances": dict()}
         # TODO
         return state_output
 
-    def parse_global_state(self, global_state: Dict[str, Union[str, int]]) -> GlobalStateOutput:
+    def parse_global_state(
+        self, global_state: Dict[str, Union[str, int]]
+    ) -> GlobalStateOutput:
         state_output: GlobalStateOutput = {
             "asset_balances": dict(),
             "timestamp_from": None,
             "timestamp_to": None,
             "round_from": None,
-            "round_to": None
+            "round_to": None,
         }
         # TODO
         return state_output
+
+    def test_application_type(self) -> bool:
+        return True
