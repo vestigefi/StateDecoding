@@ -2,6 +2,15 @@ from abc import ABC, abstractmethod
 from typing import Optional, TypedDict, List, Dict, Union
 
 
+class UsageType:
+    # one-sided staking for coins, e.g. YLDY -> YLDY
+    STAKING = 'STKE'
+    # one-sided and two-sided staking for coins, e.g. YLDY/ALGO LP -> YLDY
+    FARMING = 'FARM'
+    # lending/borrowing protocols
+    LENDING = 'LEND'
+
+
 class LocalStateOutput(TypedDict):
     asset_balances: Dict[
         int, int
@@ -29,6 +38,12 @@ class ApplicationType(ABC):
     @abstractmethod
     def key(self) -> str:
         # Returns a 4 letter application type identifier (e.g. "AF1L")
+        pass
+
+    @property
+    @abstractmethod
+    def type(self) -> str:
+        # Returns the type of Application using UsageType (e.g. UsageType.FARMING)
         pass
 
     @abstractmethod
@@ -68,4 +83,11 @@ class ApplicationType(ABC):
         self, global_state: Dict[str, Union[str, int]]
     ) -> GlobalStateOutput:
         # Return parsed global state for given application
+        pass
+
+    def test_application_type(self) -> bool:
+        # Dummy function that should call any of the known IDs of this application type using above functions
+        # and check if data is valid
+        # use get_application_state() from _common
+        # Return True if valid, else False
         pass
