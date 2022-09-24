@@ -64,4 +64,5 @@ class Template(ApplicationType):
         return state_output
 
     def test_application_type(self) -> bool:
+        # TODO
         return True
