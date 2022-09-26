@@ -1,7 +1,7 @@
 import requests
 import json
-from typing import Dict, Union
-from src.common.logger import logger
+import base64
+from typing import Dict, Union, List
 
 
 MAINNET_NODE_API_URL = "https://mainnet-api.algonode.cloud/"
@@ -77,7 +77,7 @@ def state_entry_to_dict(state_entry: dict) -> Dict[str, Union[str, int]]:
 
 
 def get_application_state(application_id: int) -> Dict[str, Union[str, int]]:
-    """Returns application state as dict"""
+    """Returns application state as dict (MEANT TO BE USED FOR TESTS ONLY)"""
     try:
         state = dict()
         data = indexer_get_request(f"v2/applications/{application_id}")
@@ -94,5 +94,51 @@ def get_application_state(application_id: int) -> Dict[str, Union[str, int]]:
                     state.update(state_entry_to_dict(entry))
         return state
     except Exception as e:
-        logger.error(f"Couldn't view application state for ID {application_id}: {e}")
-        return dict()
+        raise Exception(f"Couldn't view application state for ID {application_id}: {e}")
+
+
+def get_wallet_state(address: str, application_id: int) -> Dict[str, Union[str, int]]:
+    """Returns wallet state for application as dict (MEANT TO BE USED FOR TESTS ONLY)"""
+    try:
+        state = dict()
+        data = indexer_get_request(f"v2/accounts/{address}")
+        account = data.get("account")
+        local_state = account.get("apps-local-state")
+        if local_state:
+            for wallet_state in local_state:
+                if wallet_state['id'] == application_id:
+                    for entry in wallet_state.get('key-value', []):
+                        state.update(state_entry_to_dict(entry))
+                    break
+        return state
+    except Exception as e:
+        raise Exception(f"Couldn't view wallet state for address {address}: {e}")
+
+
+def base64_state_to_bytes(keys: List[str], state: Dict[str, Union[str, int]]) -> bytes:
+    """
+    Parse base64-encoded values from state dict to bytes (for compressed memory SCs)
+
+    Args:
+        keys (list): ordered list of keys to be concatenated together
+        state (dict): dict containing state keys
+
+    Returns:
+        bytes: bytes of SC memory
+    """
+    state_bytes = b''
+    for key in keys:
+        if key not in state:
+            raise Exception(f"Key {key} not found in state.")
+        if type(state[key]) != 'str':
+            raise Exception(f"Key {key} is not a string.")
+        try:
+            state_bytes += base64.b64decode(state[key])
+        except Exception as e:
+            raise Exception(f"Key {key} is not a base64 valid string: {e}")
+    return state_bytes
+
+
+def ABI_state_to_values(ABI_string: str, state_bytes: bytes) -> List[Union[str, int]]:
+    # TBD
+    return []
