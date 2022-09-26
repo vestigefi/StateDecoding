@@ -5,8 +5,8 @@ from src.common.common import get_application_state, get_wallet_state
 from src.common.abstract import (
     ApplicationType,
     UsageType,
-    GlobalStateOutput,
-    LocalStateOutput,
+    ApplicationStateOutput,
+    WalletStateOutput,
     ApplicationMeta
 )
 
@@ -46,16 +46,16 @@ class Template(ApplicationType):
     @staticmethod
     def parse_wallet_state(
         wallet_state: Dict[str, Union[str, int]]
-    ) -> LocalStateOutput:
-        state_output: LocalStateOutput = {"asset_balances": dict()}
+    ) -> WalletStateOutput:
+        state_output: WalletStateOutput = {"asset_balances": dict()}
         # TODO
         return state_output
 
     @staticmethod
     def parse_application_state(
         application_state: Dict[str, Union[str, int]]
-    ) -> GlobalStateOutput:
-        state_output: GlobalStateOutput = {
+    ) -> ApplicationStateOutput:
+        state_output: ApplicationStateOutput = {
             "asset_balances": dict(),
             "timestamp_from": None,
             "timestamp_to": None,
@@ -67,12 +67,14 @@ class Template(ApplicationType):
 
     @staticmethod
     def test_application_type() -> bool:
-        wallet_state = get_wallet_state("VESTIG3V77NNVBT5SM636UKAZ3M5OQHM76TC5622RQ4Q2XUCYZ5E4ENB3E", 784136787)
+        test_wallet_address = 'VESTIG3V77NNVBT5SM636UKAZ3M5OQHM76TC5622RQ4Q2XUCYZ5E4ENB3E'
+        test_application_id = 784136787
+        wallet_state = get_wallet_state(test_wallet_address, test_application_id)
         if Template.is_wallet_state_valid(wallet_state):
             values = Template.parse_wallet_state(wallet_state)
             # TODO
             # check values, return False if any of them are wrong
-        application_state = get_application_state(777747637)
+        application_state = get_application_state(test_application_id)
         if Template.is_application_state_valid(application_state):
             values = Template.parse_application_state(application_state)
             # TODO

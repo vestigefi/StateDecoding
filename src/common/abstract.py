@@ -11,13 +11,13 @@ class UsageType:
     LENDING = "LEND"
 
 
-class LocalStateOutput(TypedDict):
+class WalletStateOutput(TypedDict):
     asset_balances: Dict[
         int, int
     ]  # { asset_id: asset_balance (no decimals) }, negative balances allowed for ALGO use 0
 
 
-class GlobalStateOutput(TypedDict):
+class ApplicationStateOutput(TypedDict):
     asset_balances: Dict[
         int, int
     ]  # { asset_id: asset_balance (no decimals) }, negative balances allowed, for ALGO use 0
@@ -73,7 +73,7 @@ class ApplicationType(ABC):
     @abstractmethod
     def parse_wallet_state(
         wallet_state: Dict[str, Union[str, int]]
-    ) -> LocalStateOutput:
+    ) -> WalletStateOutput:
         # Return parsed local state for given wallet
         pass
 
@@ -81,7 +81,7 @@ class ApplicationType(ABC):
     @abstractmethod
     def parse_application_state(
         application_state: Dict[str, Union[str, int]]
-    ) -> GlobalStateOutput:
+    ) -> ApplicationStateOutput:
         # Return parsed global state for given application
         pass
 
