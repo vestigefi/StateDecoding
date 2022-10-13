@@ -9,7 +9,7 @@ Keep the ID unique but as short as possible (4 characters).
 You can copy a template from `/src/common/TMPL/Template.py` or `/src/common/TMPL/Template.ts`.
 Afterward simply implement all the required methods to fit your new application type.
 
-After you are done, add your new decoding file to **APPLICATION_TYPES** in **main.py** for the Python implementation and **main.ts** for the Typescript implementation.
+After you are done, add your new decoding file to **APPLICATION_TYPES** in **main.py** for the Python implementation and **main.ts** for the TypeScript implementation.
 
 ### Code linting
 
