@@ -3,10 +3,11 @@ from src.common.logger import logger
 from src.common.abstract import ApplicationType
 
 # imports of Application Types
-# from src.APP_KEY import APP_NAME
-from src.common.TMPL import Template
+# from src.application_types.APP_KEY.APP_NAME import APP_NAME
+from src.common.TMPL.Template import Template
 
 
+# add your application to this list
 APPLICATION_TYPES: Dict[str, ApplicationType] = {
     Template.get_meta()['key']: Template,
 }

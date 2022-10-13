@@ -2,6 +2,7 @@ import requests
 import json
 import base64
 from typing import Dict, Union, List
+from algosdk.abi import ABIType
 
 
 MAINNET_NODE_API_URL = "https://mainnet-api.algonode.cloud/"
@@ -128,10 +129,10 @@ def base64_state_to_bytes(keys: List[str], state: Dict[str, Union[str, int]]) ->
     """
     state_bytes = b''
     for key in keys:
-        if key not in state:
-            raise Exception(f"Key {key} not found in state.")
         if type(state[key]) != 'str':
             raise Exception(f"Key {key} is not a string.")
+        if key not in state:
+            raise Exception(f"Key {key} not found in state.")
         try:
             state_bytes += base64.b64decode(state[key])
         except Exception as e:
@@ -139,6 +140,22 @@ def base64_state_to_bytes(keys: List[str], state: Dict[str, Union[str, int]]) ->
     return state_bytes
 
 
-def ABI_state_to_values(ABI_string: str, state_bytes: bytes) -> List[Union[str, int]]:
-    # TBD
-    return []
+def state_bytes_to_values(ABI_string: str, state_bytes: bytes) -> list:
+    """
+    Get values from state memory bytes
+
+    Args:
+        ABI_string: valid ABI string describing bytes format
+        state_bytes: bytes of memory to decode
+
+    Returns:
+        list: state values list
+    """
+    try:
+        value = ABIType.from_string(ABI_string).decode(state_bytes)
+        if type(value) == list:
+            return value
+        else:
+            return [value]
+    except Exception as e:
+        raise Exception(f"Invalid ABI string or state bytes: {e}")

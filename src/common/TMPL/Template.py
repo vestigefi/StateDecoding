@@ -22,7 +22,7 @@ class Template(ApplicationType):
         }
 
     @staticmethod
-    def fetch_static_application_ids(self) -> List[int]:
+    def fetch_static_application_ids() -> List[int]:
         application_ids = []
         # TODO
         return application_ids
@@ -67,6 +67,7 @@ class Template(ApplicationType):
 
     @staticmethod
     def test_application_type() -> bool:
+        # use addresses and application ids that will not break over time
         test_wallet_address = 'VESTIG3V77NNVBT5SM636UKAZ3M5OQHM76TC5622RQ4Q2XUCYZ5E4ENB3E'
         test_application_id = 784136787
         wallet_state = get_wallet_state(test_wallet_address, test_application_id)

@@ -3,9 +3,9 @@ from typing import Optional, TypedDict, List, Dict, Union
 
 
 class UsageType:
-    # one-sided staking for coins, e.g. YLDY -> YLDY
+    # one-sided staking for coins, e.g. VEST -> VEST
     STAKING = "STKE"
-    # one-sided and two-sided staking for coins, e.g. YLDY/ALGO LP -> YLDY
+    # one-sided and two-sided staking for coins, e.g. VEST/ALGO LP -> VEST
     FARMING = "FARM"
     # lending/borrowing protocols
     LENDING = "LEND"
@@ -42,7 +42,7 @@ class ApplicationType(ABC):
 
     @staticmethod
     @abstractmethod
-    def fetch_static_application_ids(self) -> List[int]:
+    def fetch_static_application_ids() -> List[int]:
         # Returns a list of application ids that are not dynamic and not need to be fetched again
         pass
 
