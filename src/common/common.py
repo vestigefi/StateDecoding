@@ -107,8 +107,8 @@ def get_wallet_state(address: str, application_id: int) -> Dict[str, Union[str, 
         local_state = account.get("apps-local-state")
         if local_state:
             for wallet_state in local_state:
-                if wallet_state['id'] == application_id:
-                    for entry in wallet_state.get('key-value', []):
+                if wallet_state["id"] == application_id:
+                    for entry in wallet_state.get("key-value", []):
                         state.update(state_entry_to_dict(entry))
                     break
         return state
@@ -127,9 +127,9 @@ def base64_state_to_bytes(keys: List[str], state: Dict[str, Union[str, int]]) ->
     Returns:
         bytes: bytes of SC memory
     """
-    state_bytes = b''
+    state_bytes = b""
     for key in keys:
-        if type(state[key]) != 'str':
+        if type(state[key]) != "str":
             raise Exception(f"Key {key} is not a string.")
         if key not in state:
             raise Exception(f"Key {key} not found in state.")

@@ -9,7 +9,7 @@ from src.common.TMPL.Template import Template
 
 # add your application to this list
 APPLICATION_TYPES: Dict[str, ApplicationType] = {
-    Template.get_meta()['key']: Template,
+    Template.get_meta()["key"]: Template,
 }
 
 

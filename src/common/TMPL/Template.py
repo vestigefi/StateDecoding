@@ -7,7 +7,7 @@ from src.common.abstract import (
     UsageType,
     ApplicationStateOutput,
     WalletStateOutput,
-    ApplicationMeta
+    ApplicationMeta,
 )
 
 
@@ -15,11 +15,7 @@ class Template(ApplicationType):
     @staticmethod
     def get_meta() -> ApplicationMeta:
         # TODO
-        return {
-            "name": "Template",
-            "key": "TMPL",
-            "type": UsageType.LENDING
-        }
+        return {"name": "Template", "key": "TMPL", "type": UsageType.LENDING}
 
     @staticmethod
     def fetch_static_application_ids() -> List[int]:
@@ -39,7 +35,9 @@ class Template(ApplicationType):
         return True
 
     @staticmethod
-    def is_application_state_valid(application_state: Dict[str, Union[str, int]]) -> bool:
+    def is_application_state_valid(
+        application_state: Dict[str, Union[str, int]]
+    ) -> bool:
         # TODO
         return True
 
@@ -68,7 +66,9 @@ class Template(ApplicationType):
     @staticmethod
     def test_application_type() -> bool:
         # use addresses and application ids that will not break over time
-        test_wallet_address = 'VESTIG3V77NNVBT5SM636UKAZ3M5OQHM76TC5622RQ4Q2XUCYZ5E4ENB3E'
+        test_wallet_address = (
+            "VESTIG3V77NNVBT5SM636UKAZ3M5OQHM76TC5622RQ4Q2XUCYZ5E4ENB3E"
+        )
         test_application_id = 784136787
         wallet_state = get_wallet_state(test_wallet_address, test_application_id)
         if Template.is_wallet_state_valid(wallet_state):
@@ -83,5 +83,5 @@ class Template(ApplicationType):
         return True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     Template.test_application_type()

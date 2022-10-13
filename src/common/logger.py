@@ -12,9 +12,7 @@ class LogFormatter(logging.Formatter):
     def format(self, record):
         t = time.localtime()
         message = logging.Formatter.format(self, record)
-        return "[{}] {}".format(
-            time.strftime("%m/%d/%Y, %H:%M:%S", t), message
-        )
+        return "[{}] {}".format(time.strftime("%m/%d/%Y, %H:%M:%S", t), message)
 
 
 logger = logging.getLogger()

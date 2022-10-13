@@ -63,7 +63,9 @@ class ApplicationType(ABC):
 
     @staticmethod
     @abstractmethod
-    def is_application_state_valid(application_state: Dict[str, Union[str, int]]) -> bool:
+    def is_application_state_valid(
+        application_state: Dict[str, Union[str, int]]
+    ) -> bool:
         # Return True if passed dict is a valid application state, else False
         # Check if state contains required for parsing keys and if those keys seem valid
         # If keys are unused in parsing, do not check for their existence
