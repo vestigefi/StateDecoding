@@ -57,18 +57,18 @@ class HumbleFarm(ApplicationType):
         return list(set(application_ids))
 
     @staticmethod
-    def is_wallet_state_valid(wallet_state: Dict[str, Union[str, int]]) -> bool:
-        # ideally this would be more complex, i.e. checking if the values there make sense
-        if "AA==" in wallet_state:
-            return True
-        return False
-
-    @staticmethod
     def is_application_state_valid(
         application_state: Dict[str, Union[str, int]]
     ) -> bool:
         # ideally this would be more complex, i.e. checking if the values there make sense
-        if len(application_state.get("asset_balances", {})):
+        if "AA==" in application_state:
+            return True
+        return False
+
+    @staticmethod
+    def is_wallet_state_valid(wallet_state: Dict[str, Union[str, int]]) -> bool:
+        # ideally this would be more complex, i.e. checking if the values there make sense
+        if "AA==" in wallet_state:
             return True
         return False
 
@@ -82,7 +82,7 @@ class HumbleFarm(ApplicationType):
 
         # ordering in application data asset balances is kept - always return lp token on first position
         lp_token_id = asset_ids[0] if len(asset_ids) > 0 else None
-        
+
         if lp_token_id:
             state_output["asset_balances"][lp_token_id] = get_bytes_value(
                 base64.b64decode(wallet_state["AA=="]), 2, 1
@@ -109,7 +109,6 @@ class HumbleFarm(ApplicationType):
     def test_application_type() -> bool:
         # TODO idk fix this shit
         # use addresses and application ids that will not break over time
-        test_application_ids = HumbleFarm.fetch_dynamic_application_ids(0)
         test_wallets = {
             "JTJ5JVY75TH2SILVAJU4SQRRY2XWEIT6VKTEQMII3QTXZVNT3RWUGUKFSA": {
                 "asset_balances": {1049108376: 38699447}

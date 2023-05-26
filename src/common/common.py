@@ -130,11 +130,11 @@ def test_application_type(
     ],
     is_application_state_valid: Callable[[], bool],
     is_wallet_state_valid: Callable[[], bool],
-):
+) -> WalletStateOutput:
     result = defaultdict(lambda: 0)
-    app_application_ids = list(
-        set(fetch_static_application_ids() + fetch_dynamic_application_ids(0))
-    )
+    static_application_ids = fetch_static_application_ids()
+    dynamic_application_ids = fetch_dynamic_application_ids(0)
+    app_application_ids = list(set(static_application_ids + dynamic_application_ids))
 
     # Get account state
     response = node_get_request(f"v2/accounts/{wallet}")
@@ -144,14 +144,19 @@ def test_application_type(
     for application_id in wallet_application_ids:
         if application_id not in app_application_ids:
             continue
+
+        raw_app_state = get_application_state(application_id)
+        if not is_application_state_valid(raw_app_state):
+            continue
         app_state = parse_application_state(get_application_state(application_id))
-        if not is_application_state_valid(app_state):
+
+        raw_wallet_state = get_wallet_state(wallet, application_id)
+        if not is_wallet_state_valid(raw_wallet_state):
             continue
-        wallet_state = get_wallet_state(wallet, application_id)
-        if not is_wallet_state_valid(wallet_state):
-            continue
-        values = parse_wallet_state(wallet_state, app_state)
-        for asset, amount in values.get("asset_balances").items():
+
+        wallet_state = parse_wallet_state(raw_wallet_state, app_state)
+        asset_balances = wallet_state.get("asset_balances")
+        for asset, amount in asset_balances.items():
             result[asset] += amount
     return {"asset_balances": dict(result)}
 
