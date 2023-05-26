@@ -24,7 +24,7 @@ def get_bytes_value(data: bytes, index: int, offset: int):
 
 
 class HumbleFarm(ApplicationType):
-    MANAGER_APP_ID = 830314595
+    MANAGER_APP_IDS = [830314595, 857348615]
 
     @staticmethod
     def get_meta() -> ApplicationMeta:
@@ -39,18 +39,20 @@ class HumbleFarm(ApplicationType):
     @staticmethod
     def fetch_dynamic_application_ids(last_application_id: int) -> List[int]:
         application_ids = []
-        response = indexer_get_request(
-            f"v2/transactions?application-id={HumbleFarm.MANAGER_APP_ID}"
-        )
-        transactions = response.get("transactions", [])
-        for transaction in response.get("transactions", []):
-            application_ids = transaction.get("application-transaction", {}).get(
-                "foreign-apps"
+        for manager_app_id in HumbleFarm.MANAGER_APP_IDS:
+            response = indexer_get_request(
+                f"v2/transactions?application-id={manager_app_id}"
             )
-            application_id = application_ids[0] if len(application_ids) > 0 else None
-            if application_id and application_id > last_application_id:
-                application_ids.append(application_id)
-        print(application_ids)
+            transactions = response.get("transactions", [])
+            for transaction in response.get("transactions", []):
+                tx_application_ids = transaction.get("application-transaction", {}).get(
+                    "foreign-apps"
+                )
+                application_id = (
+                    tx_application_ids[0] if len(tx_application_ids) > 0 else None
+                )
+                if application_id and application_id > last_application_id:
+                    application_ids.append(application_id)
         return list(set(application_ids))
 
     @staticmethod
@@ -75,9 +77,12 @@ class HumbleFarm(ApplicationType):
         application_data: ApplicationStateOutput,
     ) -> WalletStateOutput:
         state_output: WalletStateOutput = {"asset_balances": dict()}
-        asset_ids = application_data.get("asset_balances").keys()
+        asset_ids = list(application_data.get("asset_balances", {}).keys())
+
         # ordering in application data asset balances is kept - always return lp token on first position
         lp_token_id = asset_ids[0] if len(asset_ids) > 0 else None
+        print(f"lp_token_id: {lp_token_id}")
+
         if lp_token_id:
             state_output["asset_balances"][lp_token_id] = get_bytes_value(
                 base64.b64decode(wallet_state["AA=="]), 2, 1
@@ -105,26 +110,24 @@ class HumbleFarm(ApplicationType):
         # TODO idk fix this shit
         # use addresses and application ids that will not break over time
         test_application_ids = HumbleFarm.fetch_dynamic_application_ids(0)
-        print(test_application_ids)
+        print(f"test_application_ids: {test_application_ids}")
         test_wallet_address = (
-            "MEME5QEUYPK6T3DVHAU6A45RYC4JHMU3U45OCCCWZJH47HVKGKW3PZP5AM"
+            "JTJ5JVY75TH2SILVAJU4SQRRY2XWEIT6VKTEQMII3QTXZVNT3RWUGUKFSA"
         )
         response = node_get_request(f"v2/accounts/{test_wallet_address}")
         wallet_apps = response.get("apps-local-state")
         application_ids = [app.get("id") for app in wallet_apps]
-        print(application_ids)
+        print(f"application_ids: {application_ids}")
         for application_id in application_ids:
-            app_state = get_application_state(application_id)
-            print(app_state)
-            print(
-                HumbleFarm.parse_application_state(
+            if application_id in test_application_ids:
+                app_state = HumbleFarm.parse_application_state(
                     get_application_state(application_id)
                 )
-            )
-            if application_id in test_application_ids:
+                print(f"app_state: {app_state}")
                 wallet_state = get_wallet_state(test_wallet_address, application_id)
+                print(f"wallet_state: {wallet_state}")
                 if HumbleFarm.is_wallet_state_valid(wallet_state):
-                    values = HumbleFarm.parse_wallet_state(wallet_state)
+                    values = HumbleFarm.parse_wallet_state(wallet_state, app_state)
                     print(values)
                     # TODO
                     # check values, return False if any of them are wrong
