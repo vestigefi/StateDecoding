@@ -1,8 +1,10 @@
 import requests
 import json
 import base64
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Callable
 from algosdk.abi import ABIType
+from .abstract import ApplicationStateOutput, WalletStateOutput
+from collections import defaultdict
 
 
 MAINNET_NODE_API_URL = "https://mainnet-api.algonode.cloud/"
@@ -114,6 +116,44 @@ def get_wallet_state(address: str, application_id: int) -> Dict[str, Union[str, 
         return state
     except Exception as e:
         raise Exception(f"Couldn't view wallet state for address {address}: {e}")
+
+
+def test_application_type(
+    wallet: str,
+    fetch_static_application_ids: Callable[[], list[int]],
+    fetch_dynamic_application_ids: Callable[[], list[int]],
+    parse_application_state: Callable[
+        [Dict[str, Union[str, int]]], ApplicationStateOutput
+    ],
+    parse_wallet_state: Callable[
+        [Dict[str, Union[str, int]], ApplicationStateOutput], WalletStateOutput
+    ],
+    is_application_state_valid: Callable[[], bool],
+    is_wallet_state_valid: Callable[[], bool],
+):
+    result = defaultdict(lambda: 0)
+    app_application_ids = list(
+        set(fetch_static_application_ids() + fetch_dynamic_application_ids(0))
+    )
+
+    # Get account state
+    response = node_get_request(f"v2/accounts/{wallet}")
+    wallet_apps = response.get("apps-local-state")
+    wallet_application_ids = [app.get("id") for app in wallet_apps]
+    # For each
+    for application_id in wallet_application_ids:
+        if application_id not in app_application_ids:
+            continue
+        app_state = parse_application_state(get_application_state(application_id))
+        if not is_application_state_valid(app_state):
+            continue
+        wallet_state = get_wallet_state(wallet, application_id)
+        if not is_wallet_state_valid(wallet_state):
+            continue
+        values = parse_wallet_state(wallet_state, app_state)
+        for asset, amount in values.get("asset_balances").items():
+            result[asset] += amount
+    return {"asset_balances": dict(result)}
 
 
 def base64_state_to_bytes(keys: List[str], state: Dict[str, Union[str, int]]) -> bytes:
