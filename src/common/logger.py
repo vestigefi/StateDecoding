@@ -2,6 +2,14 @@ import logging
 import sys
 import time
 
+COLORS = {
+    "DEFAULT": "\033[37m",
+    "INFO": "\033[92m",
+    "WARNING": "\033[93m",
+    "ERROR": "\033[91m",
+    "ENDC": "\033[0m",
+}
+
 
 class LogFormatter(logging.Formatter):
     """Formatter class used for displaying various messages while running the app"""
@@ -11,8 +19,13 @@ class LogFormatter(logging.Formatter):
 
     def format(self, record):
         t = time.localtime()
+        color = COLORS.get(record.levelname, COLORS["DEFAULT"])
         message = logging.Formatter.format(self, record)
-        return "[{}] {}".format(time.strftime("%m/%d/%Y, %H:%M:%S", t), message)
+        return (
+            color
+            + "[{}] {}".format(time.strftime("%m/%d/%Y, %H:%M:%S", t), message)
+            + COLORS["ENDC"]
+        )
 
 
 logger = logging.getLogger()

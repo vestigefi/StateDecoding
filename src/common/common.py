@@ -129,7 +129,7 @@ def base64_state_to_bytes(keys: List[str], state: Dict[str, Union[str, int]]) ->
     """
     state_bytes = b""
     for key in keys:
-        if type(state[key]) != "str":
+        if type(state[key]) != str:
             raise Exception(f"Key {key} is not a string.")
         if key not in state:
             raise Exception(f"Key {key} not found in state.")

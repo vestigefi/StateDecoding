@@ -55,7 +55,10 @@ class ApplicationType(ABC):
 
     @staticmethod
     @abstractmethod
-    def is_wallet_state_valid(wallet_state: Dict[str, Union[str, int]]) -> bool:
+    def is_wallet_state_valid(
+        wallet_state: Dict[str, Union[str, int]],
+        application_date: ApplicationStateOutput,
+    ) -> bool:
         # Return True if passed dict is a valid application state for wallet, else False
         # Check if state contains required for parsing keys and if those keys seem valid
         # If keys are unused in parsing, do not check for their existence
@@ -74,7 +77,8 @@ class ApplicationType(ABC):
     @staticmethod
     @abstractmethod
     def parse_wallet_state(
-        wallet_state: Dict[str, Union[str, int]]
+        wallet_state: Dict[str, Union[str, int]],
+        application_data: ApplicationStateOutput,
     ) -> WalletStateOutput:
         # Return parsed local state for given wallet
         pass
