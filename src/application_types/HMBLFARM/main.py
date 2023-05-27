@@ -111,7 +111,7 @@ class HumbleFarm(ApplicationType):
         # use addresses and application ids that will not break over time
         test_wallets = {
             "JTJ5JVY75TH2SILVAJU4SQRRY2XWEIT6VKTEQMII3QTXZVNT3RWUGUKFSA": {
-                "asset_balances": {1049108376: 38699447}
+                "asset_balances": {1049108376: 38699447, 1055369800: 716722137}
             }
         }
 
