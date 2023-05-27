@@ -3,7 +3,7 @@ import json
 import base64
 from typing import Dict, Union, List, Callable
 from algosdk.abi import ABIType
-from .abstract import ApplicationStateOutput, WalletStateOutput
+from .abstract import ApplicationType, WalletStateOutput
 from collections import defaultdict
 
 
@@ -119,21 +119,11 @@ def get_wallet_state(address: str, application_id: int) -> Dict[str, Union[str, 
 
 
 def test_application_type(
-    wallet: str,
-    fetch_static_application_ids: Callable[[], list[int]],
-    fetch_dynamic_application_ids: Callable[[], list[int]],
-    parse_application_state: Callable[
-        [Dict[str, Union[str, int]]], ApplicationStateOutput
-    ],
-    parse_wallet_state: Callable[
-        [Dict[str, Union[str, int]], ApplicationStateOutput], WalletStateOutput
-    ],
-    is_application_state_valid: Callable[[], bool],
-    is_wallet_state_valid: Callable[[], bool],
+    wallet: str, application_type: ApplicationType
 ) -> WalletStateOutput:
     result = defaultdict(lambda: 0)
-    static_application_ids = fetch_static_application_ids()
-    dynamic_application_ids = fetch_dynamic_application_ids(0)
+    static_application_ids = application_type.fetch_static_application_ids()
+    dynamic_application_ids = application_type.fetch_dynamic_application_ids(0)
     app_application_ids = list(set(static_application_ids + dynamic_application_ids))
 
     # Get account state
@@ -146,15 +136,17 @@ def test_application_type(
             continue
 
         raw_app_state = get_application_state(application_id)
-        if not is_application_state_valid(raw_app_state):
+        if not application_type.is_application_state_valid(raw_app_state):
             continue
-        app_state = parse_application_state(get_application_state(application_id))
+        app_state = application_type.parse_application_state(
+            get_application_state(application_id)
+        )
 
         raw_wallet_state = get_wallet_state(wallet, application_id)
-        if not is_wallet_state_valid(raw_wallet_state):
+        if not application_type.is_wallet_state_valid(raw_wallet_state):
             continue
 
-        wallet_state = parse_wallet_state(raw_wallet_state, app_state)
+        wallet_state = application_type.parse_wallet_state(raw_wallet_state, app_state)
         asset_balances = wallet_state.get("asset_balances")
         for asset, amount in asset_balances.items():
             result[asset] += amount

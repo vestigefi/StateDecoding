@@ -116,15 +116,7 @@ class HumbleFarm(ApplicationType):
         }
 
         for wallet, expected_result in test_wallets.items():
-            res = test_application_type(
-                wallet,
-                HumbleFarm.fetch_static_application_ids,
-                HumbleFarm.fetch_dynamic_application_ids,
-                HumbleFarm.parse_application_state,
-                HumbleFarm.parse_wallet_state,
-                HumbleFarm.is_application_state_valid,
-                HumbleFarm.is_wallet_state_valid,
-            )
+            res = test_application_type(wallet, HumbleFarm)
             print(res, expected_result)
             if res != expected_result:
                 return False
