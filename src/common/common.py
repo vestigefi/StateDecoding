@@ -149,10 +149,11 @@ def test_application_type(
     # Get account state
     response = node_get_request(f"v2/accounts/{wallet}")
     wallet_apps = response.get("apps-local-state")
-    wallet_application_ids = [app.get("id") for app in wallet_apps]
     raw_wallet_state = get_wallet_state(wallet)
+    local_application_ids = application_type.fetch_local_application_ids(raw_wallet_state)
 
-    app_application_ids = list(set(static_application_ids + dynamic_application_ids))
+    wallet_application_ids = list(set([app.get("id") for app in wallet_apps] + local_application_ids))
+    app_application_ids = list(set(local_application_ids + static_application_ids + dynamic_application_ids))
 
     # For each application, get it's state, use it to parse the wallet state and add the asset amounts to the result
     for application_id in wallet_application_ids:
@@ -172,6 +173,7 @@ def test_application_type(
         wallet_state = application_type.parse_wallet_state(
             raw_wallet_state, app_state, application_id
         )
+
         asset_balances = wallet_state.get("asset_balances")
         for asset, amount in asset_balances.items():
             result[asset] += amount

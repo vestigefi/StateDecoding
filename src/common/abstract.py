@@ -64,8 +64,7 @@ class ApplicationType(ABC):
     @staticmethod
     @abstractmethod
     def fetch_local_application_ids(raw_wallet_state) -> List[int]:
-        # Return a list of application ids that are dynamic
-        # The function should make use of last_application_id to only return applications with higher ids
+        # Return a list of application ids that are local to the wallet, i.e. created apps.
         pass
 
     @staticmethod
