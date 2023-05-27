@@ -1,7 +1,11 @@
 # This is a template file for easy start
 
 from typing import Dict, Union, List
-from src.common.common import get_application_state, get_wallet_state
+from src.common.common import (
+    get_application_state,
+    get_wallet_state,
+    test_application_type,
+)
 from src.common.abstract import (
     ApplicationType,
     UsageType,
@@ -25,6 +29,12 @@ class Template(ApplicationType):
 
     @staticmethod
     def fetch_dynamic_application_ids(last_application_id: int) -> List[int]:
+        application_ids = []
+        # TODO
+        return application_ids
+
+    @staticmethod
+    def fetch_local_application_ids(raw_wallet_state) -> List[int]:
         application_ids = []
         # TODO
         return application_ids
@@ -86,6 +96,22 @@ class Template(ApplicationType):
                 # check values, return False if any of them are wrong
                 return True
         return False
+
+    @staticmethod
+    def test_application_type() -> bool:
+        test_wallets = {
+            "JTJ5JVY75TH2SILVAJU4SQRRY2XWEIT6VKTEQMII3QTXZVNT3RWUGUKFSA": {
+                "asset_balances": {}
+            }
+        }
+
+        for wallet, expected_result in test_wallets.items():
+            res = test_application_type(wallet, Template)
+            print(res, expected_result)
+            if res != expected_result:
+                return False
+
+        return True
 
 
 if __name__ == "__main__":

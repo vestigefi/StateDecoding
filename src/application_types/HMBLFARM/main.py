@@ -14,6 +14,7 @@ from src.common.abstract import (
     ApplicationStateOutput,
     WalletStateOutput,
     ApplicationMeta,
+    RawWalletState,
 )
 import base64
 
@@ -38,6 +39,11 @@ class HumbleFarm(ApplicationType):
         return []
 
     @staticmethod
+    def fetch_local_application_ids(raw_wallet_state) -> List[int]:
+        # no local application ids, the user does not create their own escrow app.
+        return []
+
+    @staticmethod
     def fetch_dynamic_application_ids(last_application_id: int) -> List[int]:
         application_ids = []
         for manager_app_id in HumbleFarm.MANAGER_APP_IDS:
@@ -45,7 +51,7 @@ class HumbleFarm(ApplicationType):
                 f"v2/transactions?application-id={manager_app_id}"
             )
             transactions = response.get("transactions", [])
-            for transaction in response.get("transactions", []):
+            for transaction in transactions:
                 tx_application_ids = transaction.get("application-transaction", {}).get(
                     "foreign-apps"
                 )
@@ -66,16 +72,19 @@ class HumbleFarm(ApplicationType):
         return False
 
     @staticmethod
-    def is_wallet_state_valid(wallet_state: Dict[str, Union[str, int]]) -> bool:
+    def is_wallet_state_valid(
+        wallet_state: RawWalletState, application_id: int
+    ) -> bool:
         # ideally this would be more complex, i.e. checking if the values there make sense
-        if "AA==" in wallet_state:
+        if "AA==" in wallet_state["local_state"].get(application_id):
             return True
         return False
 
     @staticmethod
     def parse_wallet_state(
-        wallet_state: Dict[str, Union[str, int]],
+        wallet_state: RawWalletState,
         application_data: ApplicationStateOutput,
+        application_id: int,
     ) -> WalletStateOutput:
         state_output: WalletStateOutput = {"asset_balances": dict()}
         asset_ids = list(application_data.get("asset_balances", {}).keys())
@@ -85,7 +94,10 @@ class HumbleFarm(ApplicationType):
 
         if lp_token_id:
             state_output["asset_balances"][lp_token_id] = get_bytes_value(
-                base64.b64decode(wallet_state["AA=="]), 2, 1
+                # This state always exists if is_wallet_state_valid is OK.
+                base64.b64decode(wallet_state["local_state"][application_id]["AA=="]),
+                2,
+                1,
             )
         return state_output
 
@@ -107,8 +119,6 @@ class HumbleFarm(ApplicationType):
 
     @staticmethod
     def test_application_type() -> bool:
-        # TODO idk fix this shit
-        # use addresses and application ids that will not break over time
         test_wallets = {
             "JTJ5JVY75TH2SILVAJU4SQRRY2XWEIT6VKTEQMII3QTXZVNT3RWUGUKFSA": {
                 "asset_balances": {1049108376: 38699447, 1055369800: 716722137}

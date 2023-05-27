@@ -3,7 +3,7 @@ import json
 import base64
 from typing import Dict, Union, List, Callable
 from algosdk.abi import ABIType
-from .abstract import ApplicationType, WalletStateOutput
+from .abstract import RawWalletState, ApplicationType, WalletStateOutput
 from collections import defaultdict
 
 
@@ -94,26 +94,47 @@ def get_application_state(application_id: int) -> Dict[str, Union[str, int]]:
         if local_state:
             for wallet_state in local_state:
                 for entry in wallet_state.get("delta", []):
+                    # TODO: Can't put both local and global state into the dict like this
+                    # as they might have the same keys.
                     state.update(state_entry_to_dict(entry))
         return state
     except Exception as e:
         raise Exception(f"Couldn't view application state for ID {application_id}: {e}")
 
 
-def get_wallet_state(address: str, application_id: int) -> Dict[str, Union[str, int]]:
+def get_wallet_state(address: str) -> RawWalletState:
     """Returns wallet state for application as dict (MEANT TO BE USED FOR TESTS ONLY)"""
     try:
-        state = dict()
+        wallet_state = {"assets": dict(), "local_state": dict(), "created_apps": dict()}
         data = indexer_get_request(f"v2/accounts/{address}")
         account = data.get("account")
-        local_state = account.get("apps-local-state")
-        if local_state:
-            for wallet_state in local_state:
-                if wallet_state["id"] == application_id:
-                    for entry in wallet_state.get("key-value", []):
-                        state.update(state_entry_to_dict(entry))
-                    break
-        return state
+
+        # Get assets with non-zero values
+        for asset in account.get("assets"):
+            amount = asset.get("amount")
+            id = asset.get("asset-id")
+            if amount and id:
+                wallet_state["assets"].update({id: amount})
+
+        # Get local state per app, as key:value pairs.
+        for application in account.get("apps-local-state", []):
+            state_values = dict()
+            for state in application.get("key-value"):
+                id = application.get("id")
+                state_value = state.get("value")
+                b = state_value.get("bytes")
+                i = state_value.get("uint")
+                state_values.update({state.get("key"): i if i else b})
+            wallet_state["local_state"].update({id: state_values})
+
+        # Get created apps, their IDs and their bytecodes
+        for created_application in account.get("created-apps", []):
+            if created_application.get("deleted"):
+                continue
+            id = created_application.get("id")
+            bytecode = created_application.get("params").get("approval-program")
+            wallet_state["created_apps"].update({id: bytecode})
+        return wallet_state
     except Exception as e:
         raise Exception(f"Couldn't view wallet state for address {address}: {e}")
 
@@ -124,13 +145,16 @@ def test_application_type(
     result = defaultdict(lambda: 0)
     static_application_ids = application_type.fetch_static_application_ids()
     dynamic_application_ids = application_type.fetch_dynamic_application_ids(0)
-    app_application_ids = list(set(static_application_ids + dynamic_application_ids))
 
     # Get account state
     response = node_get_request(f"v2/accounts/{wallet}")
     wallet_apps = response.get("apps-local-state")
     wallet_application_ids = [app.get("id") for app in wallet_apps]
-    # For each
+    raw_wallet_state = get_wallet_state(wallet)
+
+    app_application_ids = list(set(static_application_ids + dynamic_application_ids))
+
+    # For each application, get it's state, use it to parse the wallet state and add the asset amounts to the result
     for application_id in wallet_application_ids:
         if application_id not in app_application_ids:
             continue
@@ -142,11 +166,12 @@ def test_application_type(
             get_application_state(application_id)
         )
 
-        raw_wallet_state = get_wallet_state(wallet, application_id)
-        if not application_type.is_wallet_state_valid(raw_wallet_state):
+        if not application_type.is_wallet_state_valid(raw_wallet_state, application_id):
             continue
 
-        wallet_state = application_type.parse_wallet_state(raw_wallet_state, app_state)
+        wallet_state = application_type.parse_wallet_state(
+            raw_wallet_state, app_state, application_id
+        )
         asset_balances = wallet_state.get("asset_balances")
         for asset, amount in asset_balances.items():
             result[asset] += amount

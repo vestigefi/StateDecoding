@@ -11,6 +11,13 @@ class UsageType:
     LENDING = "LEND"
 
 
+class RawWalletState(TypedDict):
+    # TODO: Type this properly.
+    assets: Dict
+    local_state: Dict
+    created_apps: Dict
+
+
 class WalletStateOutput(TypedDict):
     asset_balances: Dict[
         int, int
@@ -25,6 +32,7 @@ class ApplicationStateOutput(TypedDict):
     timestamp_to: Optional[int]  # unix timestamp
     round_from: Optional[int]
     round_to: Optional[int]
+    application_id: int
 
 
 class ApplicationMeta(TypedDict):
@@ -49,6 +57,13 @@ class ApplicationType(ABC):
     @staticmethod
     @abstractmethod
     def fetch_dynamic_application_ids(last_application_id: int) -> List[int]:
+        # Return a list of application ids that are dynamic
+        # The function should make use of last_application_id to only return applications with higher ids
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def fetch_local_application_ids(raw_wallet_state) -> List[int]:
         # Return a list of application ids that are dynamic
         # The function should make use of last_application_id to only return applications with higher ids
         pass
